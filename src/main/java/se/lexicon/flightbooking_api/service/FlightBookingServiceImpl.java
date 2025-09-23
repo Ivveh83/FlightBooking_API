@@ -51,6 +51,8 @@ public class FlightBookingServiceImpl implements FlightBookingService {
         }
 
         flight.setStatus(FlightStatus.AVAILABLE);
+        flight.setPassengerEmail(null);
+        flight.setPassengerName(null);
         flightBookingRepository.save(flight);
     }
 
