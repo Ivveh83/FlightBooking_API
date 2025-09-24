@@ -94,6 +94,9 @@ public class AppToolCalling {
         if (flight.getStatus() == FlightStatus.AVAILABLE) {
             return  "Flight with id " + flightId + " is already available";
         }
+        if (!flight.getPassengerEmail().equals(email)) {
+            return "Passenger email does not match";
+        }
         flight.setStatus(FlightStatus.AVAILABLE);
         flight.setPassengerEmail(null);
         flight.setPassengerName(null);
