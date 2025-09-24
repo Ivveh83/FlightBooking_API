@@ -6,13 +6,15 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import se.lexicon.flightbooking_api.dto.AvailableFlightDTO;
-import se.lexicon.flightbooking_api.dto.BookFlightRequestDTO;
-import se.lexicon.flightbooking_api.dto.FlightBookingDTO;
-import se.lexicon.flightbooking_api.dto.FlightListDTO;
+import se.lexicon.flightbooking_api.dto.*;
+import se.lexicon.flightbooking_api.service.ChatService;
 import se.lexicon.flightbooking_api.service.FlightBookingService;
 
 import java.util.List;
@@ -21,9 +23,11 @@ import java.util.List;
 @RequestMapping("/api/flights")
 @RequiredArgsConstructor
 @Tag(name = "Flight Booking API", description = "APIs for flight booking operations")
+@Validated
 public class FlightBookingController {
 
     private final FlightBookingService flightBookingService;
+    private final ChatService chatService;
 
     @Operation(summary = "Get all flights", description = "Returns a list of all flights")
     @ApiResponse(responseCode = "200", description = "Successfully retrieved all flights")
@@ -72,5 +76,14 @@ public class FlightBookingController {
             @Parameter(description = "Email associated with the booking") @RequestParam String email) {
         flightBookingService.cancelFlight(flightId, email);
         return ResponseEntity.noContent().build();
+    }
+    @PostMapping(value = "/chat")
+    @ResponseStatus(HttpStatus.OK)
+    public String askWithContext(
+            @RequestBody
+            @Valid
+            QueryDto queryDto) {
+        System.out.println("Received query: " + "Query: "+ queryDto.query() + " ConversationId: " + queryDto.conversationId());
+        return chatService.chatWithMemory(queryDto);
     }
 }
