@@ -62,26 +62,43 @@ public class AppToolCalling {
         return dto.toString();
     }
 
-    /*
-    @Tool(description = "Get all bookings under a specific email")
-    public String checkBooking(String letters) {
-        System.out.println("Finding by Letter: " + letters);
-        List<String> result = storageSimulation.stream()
-                .filter(s -> s.contains(letters))
-                .toList();
+
+    @Tool(description = "Get all bookings for a specific email")
+    public String checkBooking(String email) {
+        System.out.println("Finding by email: " + email);
+        List<FlightBooking> result = flightBookingRepository.findByPassengerEmail(email);
         if (result.isEmpty()) {
-            System.out.println("No such letter: " + letters);
-            return "No such letter: " + letters;
+            System.out.println("No bookings under this email: " + email);
+            return "There are no bookings under this email: " + email;
         }else  {
-            return "Name found: " + String.join(", ", result);
+            List<FlightBookingDTO> dtoList = result.stream().map(fb -> mapper.toDTO(fb)).toList();
+            List<String> list = dtoList.stream().map(Record::toString).toList();
+            return "Bookings found: " + list;
         }
     }
 
-    @Tool(description = "Remove a booking from the database")
-    public String cancelBooking(String newName) {
-        System.out.println("Removing New Name: " + newName);
-        if (storageSimulation.remove(newName)) return "Operation successful! New name removed: " + newName;
-        else return "Operation failed! New name not found: " + newName;
+    @Tool(description = "Cancel a booking from the database")
+    public String cancelBooking(Long flightId, String email) {
+        if (flightId == null) {
+            return "flightId can not be null";
+        } else if (email == null || email.isEmpty()) {
+            return "email can not be null or empty";
+        }
+        System.out.println("Canceling booking with flightId: " + flightId);
+        Optional<FlightBooking> flightOptional = flightBookingRepository.findById(flightId);
+        if (flightOptional.isEmpty()) {
+            return "Flight with id " + flightId + " does not exist";
+        }
+        FlightBooking flight = flightOptional.get();
+
+        if (flight.getStatus() == FlightStatus.AVAILABLE) {
+            return  "Flight with id " + flightId + " is already available";
+        }
+        flight.setStatus(FlightStatus.AVAILABLE);
+        flight.setPassengerEmail(null);
+        flight.setPassengerName(null);
+        FlightBooking savedFlight  = flightBookingRepository.save(flight);
+        FlightBookingDTO dto = mapper.toDTO(savedFlight);
+        return "Booking was successfully canceled: " + dto.toString();
     }
-    */
 }

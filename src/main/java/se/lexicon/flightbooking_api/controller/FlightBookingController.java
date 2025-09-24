@@ -77,6 +77,7 @@ public class FlightBookingController {
         flightBookingService.cancelFlight(flightId, email);
         return ResponseEntity.noContent().build();
     }
+    @Operation(summary = "AI Assistant", description = "Create, cancel or fetch information about a booking through chat")
     @PostMapping(value = "/chat")
     @ResponseStatus(HttpStatus.OK)
     public String askWithContext(

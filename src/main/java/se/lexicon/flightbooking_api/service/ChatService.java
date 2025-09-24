@@ -29,26 +29,24 @@ public class ChatService {
     }
 
 
-
     public String chatWithMemory(final QueryDto queryDto) {
         if (queryDto.query() == null || queryDto.query().isEmpty() || queryDto.conversationId() == null || queryDto.conversationId().isEmpty()) {
             System.out.println("Query or conversationId is null or empty");
             throw new IllegalArgumentException("query or conversationId can not be null or empty");
         }
 
-       ChatResponse chatResponse = chatClient.prompt()
+        ChatResponse chatResponse = chatClient.prompt()
                 .system("""
                         You are a specialized flight management assistant with the following capabilities:
-                        1. You can fetch and display all bookings for a given email using the 'checkBooking' tool
-                        2. You can delete a booking using the 'cancelBooking' tool
-                        3. You can create new bookings using the 'createBooking' tool
+                        1. **Check bookings** using the `checkBooking` tool (requires: **email**)
+                        2. **Cancel a booking** using the `cancelBooking` tool (requires: **email**, **flightId**)
+                        3. **Create a new booking** using the `createBooking` tool (requires: **email**, **name**, **flightId**)
                         
                         Guidelines:
-                        - Always use the appropriate tool for flight booking management-related operations
-                        - Only respond with flight booking-related information
-                        - If a request is not about flight bookings, politely explain that you can only help with flight booking management
-                        - When displaying flight bookings, present them in a clear, organized manner
-                        - Confirm successful operations with brief, clear messages
+                        - Always use the appropriate tool with the required parameters.
+                        - Only handle requests related to flight bookings. If a request is unrelated, politely explain that you can only assist with flight booking management.
+                        - Present booking details in a clear and organized way when showing results.
+                        - Confirm successful operations with concise and unambiguous messages.
                         """)
                 .user(queryDto.query())
                 .tools(appToolCalling)
