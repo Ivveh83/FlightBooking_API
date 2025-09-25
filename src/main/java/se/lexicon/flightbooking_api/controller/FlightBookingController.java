@@ -78,13 +78,17 @@ public class FlightBookingController {
         return ResponseEntity.noContent().build();
     }
     @Operation(summary = "AI Assistant", description = "Create, cancel or fetch information about a booking through chat")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved a message")
     @PostMapping(value = "/chat")
     @ResponseStatus(HttpStatus.OK)
     public String askWithContext(
             @RequestBody
             @Valid
+            @Parameter(description = "QueryDto containing query and conversationId")
             QueryDto queryDto) {
         System.out.println("Received query: " + "Query: "+ queryDto.query() + " ConversationId: " + queryDto.conversationId());
-        return chatService.chatWithMemory(queryDto);
+        String answer = chatService.chatWithMemory(queryDto);
+        System.out.println("Answer from AI: " + answer);
+        return answer;
     }
 }
