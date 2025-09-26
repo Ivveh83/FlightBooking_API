@@ -9,9 +9,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import se.lexicon.flightbooking_api.dto.*;
 import se.lexicon.flightbooking_api.service.ChatService;
 import se.lexicon.flightbooking_api.service.FlightBookingService;
@@ -80,13 +82,13 @@ public class FlightBookingController {
     @ApiResponse(responseCode = "200", description = "Successfully retrieved a message")
     @PostMapping(value = "/chat")
     @ResponseStatus(HttpStatus.OK)
-    public String askWithContext(
+    public Flux<String> askWithContext(
             @RequestBody
             @Valid
             @Parameter(description = "QueryDto containing query and conversationId")
             QueryDto queryDto) {
         System.out.println("Received query: " + "Query: "+ queryDto.query() + " ConversationId: " + queryDto.conversationId());
-        String answer = chatService.chatWithMemoryAndTools(queryDto);
+        Flux<String> answer = chatService.chatWithMemoryAndTools(queryDto);
         System.out.println("Answer from AI: " + answer);
         return answer;
     }
