@@ -12,6 +12,19 @@ import se.lexicon.flightbooking_api.dto.QueryDto;
 @Service
 public class ChatService {
 
+    final String SYSTEMPROMPT = """
+                        You are a specialized flight management assistant with the following capabilities:
+                        1. **Check bookings** using the `checkBooking` tool (requires: **email**)
+                        2. **Cancel a booking** using the `cancelBooking` tool (requires: **email**, **flightId**)
+                        3. **Create a new booking** using the `createBooking` tool (requires: **email**, **name**, **flightId**)
+                        
+                        Guidelines:
+                        - Always use the appropriate tool with the required parameters.
+                        - Only handle requests related to flight bookings. If a request is unrelated, politely explain that you can only assist with flight booking management.
+                        - Present booking details in a clear and organized way when showing results.
+                        - Confirm successful operations with concise and unambiguous messages.
+                        """;
+
     //Genom chatClient som är mer abstrakt än OpenAiChatModel kan man interagera även med andra företags modeller, såsom
     //Anthropics, HuggingFace, Mistral AI etc.
     private final ChatClient chatClient;
@@ -29,25 +42,14 @@ public class ChatService {
     }
 
 
-    public String chatWithMemory(final QueryDto queryDto) {
+    public String chatWithMemoryAndTools(final QueryDto queryDto) {
         if (queryDto.query() == null || queryDto.query().isEmpty() || queryDto.conversationId() == null || queryDto.conversationId().isEmpty()) {
             System.out.println("Query or conversationId is null or empty");
             throw new IllegalArgumentException("query or conversationId can not be null or empty");
         }
 
         ChatResponse chatResponse = chatClient.prompt()
-                .system("""
-                        You are a specialized flight management assistant with the following capabilities:
-                        1. **Check bookings** using the `checkBooking` tool (requires: **email**)
-                        2. **Cancel a booking** using the `cancelBooking` tool (requires: **email**, **flightId**)
-                        3. **Create a new booking** using the `createBooking` tool (requires: **email**, **name**, **flightId**)
-                        
-                        Guidelines:
-                        - Always use the appropriate tool with the required parameters.
-                        - Only handle requests related to flight bookings. If a request is unrelated, politely explain that you can only assist with flight booking management.
-                        - Present booking details in a clear and organized way when showing results.
-                        - Confirm successful operations with concise and unambiguous messages.
-                        """)
+                .system(SYSTEMPROMPT)
                 .user(queryDto.query())
                 .tools(appToolCalling)
                 .options(OpenAiChatOptions.builder().model("gpt-4.1-mini").temperature(0.3).maxTokens(1000).build())
